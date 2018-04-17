@@ -4,17 +4,26 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
+using System.Configuration;
 
 namespace ftpxml
 {
   internal class Program
   {
     private static void Main(string[] args){
-      Serverinfo server = new Serverinfo("ftp://aaa.bbb.com", "username", "password");
+      string servername = ConfigurationManager.AppSettings["ftpServer"];
+      string username = ConfigurationManager.AppSettings["ftpUsername"];
+      string password = ConfigurationManager.AppSettings["ftpPassword"];
+      Serverinfo server = new Serverinfo(servername, username, password);
       List<string> fileList = GetListOfFiles(server);
-      //DisplayListOfFiles(fileList);
-      //chooseFile();
-      //downloadFile();
+
+      string desiredFile = "books.xml";
+
+      if (fileList.Contains(desiredFile))
+      {
+        DownloadFile();
+      }
+      
       //parseFile();
       //writeResults();
     }
@@ -32,11 +41,11 @@ namespace ftpxml
       var fileList = fileNameArray.ToList();
       return fileList;
     }
+    private static void DownloadFile()
+    {
+      throw new NotImplementedException();
+    }
 
-    //private static void DisplayListOfFiles(string fileList)
-    //{
-    //  throw new NotImplementedException();
-    //}
 
   }
 }
