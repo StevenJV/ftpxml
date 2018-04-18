@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.Design.Serialization;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Security.Cryptography.X509Certificates;
 using System.Configuration;
 
 namespace ftpxml
@@ -19,7 +17,7 @@ namespace ftpxml
 
       List<string> fileList = GetListOfFiles(server);
 
-      string desiredFile = "books.xml";
+      const string desiredFile = "books.xml";
 
       if (fileList.Contains(desiredFile))
       {
@@ -56,18 +54,17 @@ namespace ftpxml
       request.KeepAlive = false;
       FtpWebResponse response = (FtpWebResponse)request.GetResponse();
       Stream responseStream = response.GetResponseStream();
-      StreamReader reader = new StreamReader(responseStream);
+      StreamReader reader = new StreamReader(responseStream ?? throw new NullReferenceException());
       using (FileStream writer = new FileStream(localDestinationPathFileName, FileMode.Create)) {
         long length = response.ContentLength;
-        int bufferSize = 2048;
-        int readCount;
+        const int bufferSize = 2048;
         byte[] buffer = new byte[bufferSize];
-        readCount = responseStream.Read(buffer, 0, bufferSize);
+        var readCount = responseStream.Read(buffer, 0, bufferSize);
         while (readCount > 0) {
           writer.Write(buffer, 0, readCount);
           readCount = responseStream.Read(buffer, 0, bufferSize);
         }
-      };
+      }
       reader.Close();
       response.Close();
 
