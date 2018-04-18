@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design.Serialization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -15,13 +16,14 @@ namespace ftpxml
       string username = ConfigurationManager.AppSettings["ftpUsername"];
       string password = ConfigurationManager.AppSettings["ftpPassword"];
       Serverinfo server = new Serverinfo(servername, username, password);
+
       List<string> fileList = GetListOfFiles(server);
 
       string desiredFile = "books.xml";
 
       if (fileList.Contains(desiredFile))
       {
-        DownloadFile();
+        DownloadFile(desiredFile, server);
       }
       
       //parseFile();
@@ -41,9 +43,34 @@ namespace ftpxml
       var fileList = fileNameArray.ToList();
       return fileList;
     }
-    private static void DownloadFile()
-    {
-      throw new NotImplementedException();
+    private static void DownloadFile(string fileName, Serverinfo server){
+      string fullFilePath = server.ServerName + "/" + fileName;
+      string localDestinationPath = ConfigurationManager.AppSettings["localDestinationPath"];
+      string localDestinationPathFileName = localDestinationPath + "\\" + fileName;
+
+      var request = (FtpWebRequest) WebRequest.Create(fullFilePath);
+      request.Method = WebRequestMethods.Ftp.DownloadFile;
+      request.Credentials = new NetworkCredential(server.Username, server.Password);
+      request.UsePassive = true;
+      request.UseBinary = true;
+      request.KeepAlive = false;
+      FtpWebResponse response = (FtpWebResponse)request.GetResponse();
+      Stream responseStream = response.GetResponseStream();
+      StreamReader reader = new StreamReader(responseStream);
+      using (FileStream writer = new FileStream(localDestinationPathFileName, FileMode.Create)) {
+        long length = response.ContentLength;
+        int bufferSize = 2048;
+        int readCount;
+        byte[] buffer = new byte[bufferSize];
+        readCount = responseStream.Read(buffer, 0, bufferSize);
+        while (readCount > 0) {
+          writer.Write(buffer, 0, readCount);
+          readCount = responseStream.Read(buffer, 0, bufferSize);
+        }
+      };
+      reader.Close();
+      response.Close();
+
     }
 
 

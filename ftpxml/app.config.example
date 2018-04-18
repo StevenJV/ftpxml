@@ -7,5 +7,6 @@
     <add key="ftpServer" value ="ftp://aaa.bbb.com"/>
     <add key="ftpUsername" value ="username"/>
     <add key="ftpPassword" value ="password"/>
+    <add key="localDestinationPath" value="c:\tempData\"/>
   </appSettings>
 </configuration>
